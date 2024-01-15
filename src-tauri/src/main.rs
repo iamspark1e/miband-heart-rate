@@ -73,14 +73,24 @@ fn heartbeat() -> String {
     format!("{}", use_global_value())
 }
 
-use tokio::runtime::Runtime;
 fn main() {
-    let rt = Runtime::new().unwrap();
-    let guard = rt.enter();
-    tokio::spawn(async { // FIXME: `dyn std::error::Error` cannot be sent between threads safely
-        start_heart_rate().await // FIXME: 需要单独启动一个线程/子线程来执行，并且在程序退出时kill掉
-    });
     tauri::Builder::default()
+        .setup(|_app| {
+            tokio::spawn(async move {
+                let result = start_heart_rate().await;
+                match result {
+                    Ok(_) => {
+                        println!("Bluetooth scanner is running");
+                    }
+                    Err(err) => {
+                        println!("Bluetooth scanner is not running");
+                        println!("{}", err);
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![greet,heartbeat])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

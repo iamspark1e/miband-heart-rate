@@ -73,7 +73,8 @@ fn heartbeat() -> String {
     format!("{}", use_global_value())
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tauri::Builder::default()
         .setup(|_app| {
             tokio::spawn(async move {

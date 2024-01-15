@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import heartPulseSvg from "./assets/HeartPulse20Regular.svg";
 import "./App.css";
@@ -31,10 +31,10 @@ function App() {
   return (
     <div className="container">
       {
-        heartbeat ? (
+        heartbeat && heartbeat !== '255' ? (
           <div className="box">
             <i className="icon ico-heartbeat">
-              <img src={heartPulseSvg} alt="" srcset="" />
+              <img src={heartPulseSvg} />
             </i>
             <span>{heartbeat}</span>
           </div>

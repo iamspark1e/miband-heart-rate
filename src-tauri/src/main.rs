@@ -105,4 +105,3 @@ wokai
         .invoke_handler(tauri::generate_handler![greet,heartbeat])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}

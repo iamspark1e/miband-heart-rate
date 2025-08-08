@@ -24,6 +24,9 @@ fn handle_device(discovered_device: AdvertisingDevice) {
 
         // ✅ 安全检查
         if manufacturer_data.company_id == 0x0157 && manufacturer_data.data.len() > 3 {
+            // let heart_rate = manufacturer_data.data[3];
+            // println!("❤️ Heart Rate: {heart_rate:?}");
+            // change_global_value(heart_rate);
             if manufacturer_data.data.len() > 3 {
                 let heart_rate = manufacturer_data.data[3];
                 println!("❤️ Heart Rate: {heart_rate:?}");
@@ -84,7 +87,8 @@ fn heartbeat() -> String {
     format!("{}", use_global_value())
 }
 
-tauri::Builder::default()
+fn main() {
+    tauri::Builder::default()
         .setup(|_app| {
             tokio::spawn(async move {
                 let result = start_heart_rate().await;
@@ -104,3 +108,4 @@ tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet,heartbeat])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}

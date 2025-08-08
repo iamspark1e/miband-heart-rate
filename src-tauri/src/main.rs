@@ -84,8 +84,7 @@ fn heartbeat() -> String {
     format!("{}", use_global_value())
 }
 
-wokai
-    tauri::Builder::default()
+tauri::Builder::default()
         .setup(|_app| {
             tokio::spawn(async move {
                 let result = start_heart_rate().await;

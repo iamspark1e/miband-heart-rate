@@ -12,7 +12,7 @@ fn handle_device(discovered_device: AdvertisingDevice) {
     let name = discovered_device
         .device
         .name()
-        .unwrap_or_else(|| "(unknown)".to_string());
+        .unwrap_or_else(|_| "(unknown)".to_string());
     let rssi = discovered_device.rssi.unwrap_or_default();
     println!("📡 Found device: {name} ({rssi} dBm)");
 
@@ -67,7 +67,7 @@ async fn start_heart_rate() -> Result<(), Box<dyn Error>> {
     adapter.wait_available().await?;
 
     println!("starting scan");
-    let mut scan = adapter.scan(&[""]).await?; // 等价于 scan all（仍是空串）
+    let mut scan = adapter.scan(&[]).await?;
 
     println!("scan started");
     while let Some(discovered_device) = scan.next().await {

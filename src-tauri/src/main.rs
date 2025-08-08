@@ -1,5 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // origin heartbeat modules
 use std::error::Error;
@@ -9,18 +9,29 @@ use bluest::{Adapter, AdvertisingDevice};
 use futures_lite::stream::StreamExt;
 
 fn handle_device(discovered_device: AdvertisingDevice) {
+    let name = discovered_device
+        .device
+        .name()
+        .unwrap_or_else(|| "(unknown)".to_string());
+    let rssi = discovered_device.rssi.unwrap_or_default();
+    println!("📡 Found device: {name} ({rssi} dBm)");
+
     if let Some(manufacturer_data) = discovered_device.adv_data.manufacturer_data {
-        if manufacturer_data.company_id != 0x0157 {
-            return;
+        println!(
+            "🏷️ Manufacturer ID: {:#04x}, Data: {:?}",
+            manufacturer_data.company_id, manufacturer_data.data
+        );
+
+        // ✅ 安全检查
+        if manufacturer_data.company_id == 0x0157 && manufacturer_data.data.len() > 3 {
+            if manufacturer_data.data.len() > 3 {
+                let heart_rate = manufacturer_data.data[3];
+                println!("❤️ Heart Rate: {heart_rate:?}");
+                change_global_value(heart_rate);
+            }
         }
-        let name = discovered_device
-            .device
-            .name()
-            .unwrap_or(String::from("(unknown)"));
-        let rssi = discovered_device.rssi.unwrap_or_default();
-        let heart_rate = manufacturer_data.data[3];
-        println!("{name} ({rssi}dBm) Heart Rate: {heart_rate:?}",);
-        change_global_value(heart_rate);
+    } else {
+        println!("No manufacturer data.");
     }
 }
 
@@ -53,7 +64,7 @@ async fn start_heart_rate() -> Result<(), Box<dyn Error>> {
     adapter.wait_available().await?;
 
     println!("starting scan");
-    let mut scan = adapter.scan(&[]).await?;
+    let mut scan = adapter.scan(&[""]).await?; // 等价于 scan all（仍是空串）
 
     println!("scan started");
     while let Some(discovered_device) = scan.next().await {
@@ -73,7 +84,7 @@ fn heartbeat() -> String {
     format!("{}", use_global_value())
 }
 
-fn main() {
+wokai
     tauri::Builder::default()
         .setup(|_app| {
             tokio::spawn(async move {
